@@ -147,7 +147,6 @@ const seed = async () => {
 
     cartsToSeed.forEach((cart, index) => {
       for (let i=0; i<Math.floor(Math.random() * 15); i++) {
-        log('I AM CART', cart)
         gamesCartToSeed.push({
           game_id: Math.ceil(Math.random() * numSeededGames.count),
           cart_id: index + 1
