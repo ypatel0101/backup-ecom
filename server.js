@@ -2,8 +2,10 @@ import "dotenv/config";
 import express from "express";
 const app = express();
 const log = console.log;
+import cors from 'cors';
 
-//Body-Parser middleware
+app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
