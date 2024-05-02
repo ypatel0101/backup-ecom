@@ -1,21 +1,22 @@
 import prisma from '../prisma/prisma.js';
 import { faker } from '@faker-js/faker';
 import bcrypt from 'bcrypt';
+import 'dotenv/config';
 
 const log = console.log;
 
-// adjust the number of seeded users, admins, games for sale, and carts here if you'd like
-const seedGames = 300;
-const seedUsers = 100;
-const seedAdmins = 5;
-const seedCarts = 50;
+// adjust the number of seed admins, users, games for sale, and carts in your .env file
+const seedAdmins = process.env.seedAdmins * 1;
+const seedUsers = process.env.seedUsers * 1;
+const seedGames = process.env.seedGames * 1;
+const seedCarts = process.env.seedCarts * 1;
 
 const seed = async () => {
   try {
 
     log('seeding database...')
 
-    log('adding seeded admins...')
+    log('adding seed admins...')
     const adminsToSeed = [];
 
     //hardcoded admins for testing
@@ -63,9 +64,9 @@ const seed = async () => {
       password: await bcrypt.hash("root", 8),
       is_admin: false,
     })
-
+    // generating unique emails for seed admins and users
     const allEmails= ensureUnique(seedAdmins + seedUsers, faker.internet.email);
-
+    // generating seed admins
     for (let i=0; i<seedAdmins; i++) {
       adminsToSeed.push({
         first_name: faker.person.firstName(),
@@ -78,18 +79,18 @@ const seed = async () => {
 
     log('adding seeded users...')
     const usersToSeed = [];
-
+    // generating seed users
     for (let i=0; i<seedUsers; i++) {
       usersToSeed.push({
         first_name: faker.person.firstName(),
         last_name: faker.person.lastName(),
-        email: allEmails[i+seedAdmins], // as admins are a subset of users, to ensure unique emails we are generating unique emails in one array
-                                        // to use in both our adminsToSeed array and usersToSeed array.
+        email: allEmails[i+seedAdmins], // as admins are a subset of users, to ensure unique emails we are generating  
+                                        // unique emails in one array to use in both our adminsToSeed array and usersToSeed array.
         password: await bcrypt.hash(faker.internet.password(), 8),
         is_admin: false,
       })
     }
-
+    // push seed admins and users to db
     const numSeededUsers = await prisma.users.createMany({
       data: [...adminsToSeed, ...usersToSeed]
     })
@@ -97,7 +98,7 @@ const seed = async () => {
 
     log('seeding games for sale...');
     const gamesToSeed = [];
-
+    // generating seed games
     const gameNames = ensureUnique(seedGames, () => faker.word.noun({length: {min: 5, max: 30}}));
     for (let i=0; i<seedGames; i++) {
       gamesToSeed.push({
@@ -115,7 +116,7 @@ const seed = async () => {
         rec_players: Math.random() > .4 ? faker.number.int({min:1, max:10}) : null
       })
     }
-
+    // push seed games to db
     const numSeededGames = await prisma.games.createMany({
       data: gamesToSeed
     })
@@ -123,20 +124,20 @@ const seed = async () => {
 
     log('now seeding random carts...');
     const cartsToSeed = [];
-
+    // generating seed carts
     for(let i=0; i<seedCarts; i++) {
       cartsToSeed.push({
-        user_id: Math.ceil(Math.random() * numSeededUsers.count), // we use Math.ceil as opposed to floor because sql table IDs start at 1
+        user_id: Math.ceil(Math.random() * numSeededUsers.count), // we use Math.ceil because sql table IDs start at 1
         is_open: Math.random() > .8
       })
       if (cartsToSeed[i].is_open) {
         if (cartsToSeed.slice(0, cartsToSeed.length-1).includes(cartsToSeed[i])) {
-          cartsToSeed.pop(); // these if statements are to ensure no one user has more than one open cart (they can have many closed carts however)
+          cartsToSeed.pop(); // these if statements are to ensure no one user has more than one open cart
           i--;
         }
       }
     }
-
+    // push seed carts to db
     await prisma.cart.createMany({
       data: cartsToSeed
     })
@@ -144,8 +145,8 @@ const seed = async () => {
 
     log('now seeding items in those random carts...')
     const gamesCartToSeed = [];
-
-    cartsToSeed.forEach((cart, index) => {
+    // generating seed items in carts
+    cartsToSeed.forEach((_, index) => {
       for (let i=0; i<Math.floor(Math.random() * 15); i++) {
         gamesCartToSeed.push({
           game_id: Math.ceil(Math.random() * numSeededGames.count),
@@ -153,7 +154,7 @@ const seed = async () => {
         })
       }
     })
-
+    // push seed items in carts to db
     await prisma.cart_games.createMany({
       data: gamesCartToSeed
     })
