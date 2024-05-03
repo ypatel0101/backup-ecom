@@ -1,10 +1,12 @@
-//This is the initial Redux Store Setup.
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore } from "@reduxjs/toolkit";
+import gamesReducer from "./gamesSlice.js";
+import authReducer from "./authSlice.js";
 
 const store = configureStore({
-  reducer: {
-    
-  }
-})
+	reducer: {
+		games: gamesReducer,
+		auth: authReducer,
+	},
+});
 
-export default store
+export default store;
