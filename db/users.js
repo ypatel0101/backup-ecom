@@ -20,6 +20,17 @@ const register = async (newUser) => {
 	}
 };
 
+const findUserByID = async (id) => {
+	try {
+		const user = await prisma.users.findUnique({
+			where: { id },
+		});
+		return user;
+	} catch (err) {
+		log(err);
+	}
+};
+
 const findUserByEmail = async (email) => {
 	try {
 		const user = await prisma.users.findUnique({
@@ -31,4 +42,13 @@ const findUserByEmail = async (email) => {
 	}
 };
 
-export { register, findUserByEmail };
+const getAllUsers = async () => {
+	try {
+		const users = await prisma.users.findMany();
+		return users;
+	} catch (err) {
+		throw err;
+	}
+};
+
+export { register, findUserByEmail, findUserByID, getAllUsers };

@@ -8,9 +8,9 @@ import store  from "./store/store.js";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-	<Provider store = { store } >
 	<BrowserRouter>
-		<App />
-	</BrowserRouter>,
-	</Provider>
+		<Provider {...{store}} >
+			<App />
+		</Provider>
+	</BrowserRouter>
 );
